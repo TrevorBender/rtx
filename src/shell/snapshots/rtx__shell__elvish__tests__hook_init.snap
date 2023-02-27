@@ -1,0 +1,14 @@
+---
+source: src/shell/elvish.rs
+expression: "elvish.activate(exe, true)"
+---
+set paths = [ /some/dir $@paths ]
+set-env RTX_SHELL elvish
+
+fn _rtx_hook {
+  eval (/some/dir/rtx hook-env --status -s elvish | slurp)
+}
+
+set edit:before-readline = [ $@edit:before-readline $_rtx_hook~ ]
+_rtx_hook
+
