@@ -27,7 +27,7 @@ impl ShellType {
             Some(ShellType::Elvish)
         } else if shell.ends_with("fish") {
             Some(ShellType::Fish)
-        }  else if shell.ends_with("xonsh") {
+        } else if shell.ends_with("xonsh") {
             Some(ShellType::Xonsh)
         } else if shell.ends_with("zsh") {
             Some(ShellType::Zsh)
