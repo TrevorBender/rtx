@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use indoc::formatdoc;
-use itertools::Itertools;
 
 use crate::shell::{is_dir_in_path, Shell};
 
@@ -35,9 +34,10 @@ impl Shell for Elvish {
               }}
             }}
 
-            fn rtx_hook {{
+            fn rtx_hook {{||
               eval ({exe} hook-env{status} -s elvish | slurp)
             }}
+            edit:add-var _rtx_hook $rtx_hook~
 
             set edit:before-readline = [ $@edit:before-readline $rtx_hook~ ]
             rtx_hook
@@ -46,9 +46,18 @@ impl Shell for Elvish {
         out
     }
 
-    fn deactivate(&self, path: String) -> String {
-        let path = path.split(':').join(" ");
-        format!("set paths = [ {path} ]\n")
+    fn deactivate(&self) -> String {
+        formatdoc! {r#"
+            unset-env RTX_SHELL
+            var x = []
+            each {{|f|
+              if (not-eq $f $_rtx_hook) {{
+                x = [ $@x $f ]
+              }}
+            }} $edit:before-readline
+            set edit:before-readline = x
+            edit:del-var rtx~
+        "#}
     }
 
     fn set_env(&self, k: &str, v: &str) -> String {
