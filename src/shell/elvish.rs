@@ -2,23 +2,15 @@ use std::path::Path;
 
 use indoc::formatdoc;
 
-use crate::shell::{is_dir_in_path, Shell};
+use crate::shell::Shell;
 
 #[derive(Default)]
 pub struct Elvish {}
 
 impl Shell for Elvish {
-    fn activate(&self, exe: &Path, status: bool) -> String {
-        let dir = exe.parent().unwrap();
-        let exe = exe.display();
-        let status = if status { " --status" } else { "" };
+    fn activate(&self, exe: &Path, flags: String) -> String {
+        let exe = exe.to_string_lossy();
         let mut out = String::new();
-        if !is_dir_in_path(dir) {
-            out.push_str(&format!(
-                "set paths = [ {dir} $@paths ]\n",
-                dir = dir.display()
-            ));
-        }
         out.push_str(&formatdoc! {r#"
             set-env RTX_SHELL elvish
 
@@ -35,7 +27,7 @@ impl Shell for Elvish {
             }}
 
             fn rtx_hook {{||
-              eval ({exe} hook-env{status} -s elvish | slurp)
+              eval ({exe} hook-env{flags} -s elvish | slurp)
             }}
             edit:add-var _rtx_hook $rtx_hook~
 
@@ -48,15 +40,13 @@ impl Shell for Elvish {
 
     fn deactivate(&self) -> String {
         formatdoc! {r#"
-            unset-env RTX_SHELL
-            var x = []
-            each {{|f|
+            unset-env MISE_SHELL
+            set edit:before-readline = [(each {{|f|
               if (not-eq $f $_rtx_hook) {{
-                x = [ $@x $f ]
+                put $f
               }}
-            }} $edit:before-readline
-            set edit:before-readline = x
-            edit:del-var rtx~
+            }} $edit:before-readline)]
+            del rtx~
         "#}
     }
 
@@ -64,6 +54,10 @@ impl Shell for Elvish {
         let k = shell_escape::unix::escape(k.into());
         let v = shell_escape::unix::escape(v.into());
         let v = v.replace("\\n", "\n");
+        format!("set-env {k} {v}\n")
+    }
+
+    fn prepend_env(&self, k: &str, v: &str) -> String {
         format!("set-env {k} {v}\n")
     }
 
@@ -80,6 +74,6 @@ mod tests {
     fn test_hook_init() {
         let elvish = Elvish::default();
         let exe = Path::new("/some/dir/rtx");
-        insta::assert_snapshot!(elvish.activate(exe, true))
+        assert_snapshot!(elvish.activate(exe, " --status".into()));
     }
 }

@@ -67,6 +67,7 @@ impl Completion {
     fn prerendered(&self, shell: Shell) -> String {
         match shell {
             Shell::Bash => include_str!("../../completions/mise.bash"),
+            Shell::Elvish => include_str!("../../completions/mise.elv"),
             Shell::Fish => include_str!("../../completions/mise.fish"),
             Shell::Zsh => include_str!("../../completions/_mise"),
         }
@@ -80,6 +81,7 @@ static AFTER_LONG_HELP: &str = color_print::cstr!(
     $ <bold>mise completion bash > /etc/bash_completion.d/mise</bold>
     $ <bold>mise completion zsh  > /usr/local/share/zsh/site-functions/_mise</bold>
     $ <bold>mise completion fish > ~/.config/fish/completions/mise.fish</bold>
+    $ <bold>eval (mise completion elvish | slurp)</bold>
 "#
 );
 
@@ -87,25 +89,47 @@ static AFTER_LONG_HELP: &str = color_print::cstr!(
 #[strum(serialize_all = "snake_case")]
 enum Shell {
     Bash,
+    Elvish,
     Fish,
     Zsh,
 }
 
 impl ValueEnum for Shell {
     fn value_variants<'a>() -> &'a [Self] {
-        &[Self::Bash, Self::Fish, Self::Zsh]
+        &[Self::Bash, Self::Elvish, Self::Fish, Self::Zsh]
     }
+    //fn from_str(input: &str, _ignore_case: bool) -> std::result::Result<Self, String> {
+        //match input {
+            //"bash" => Ok(Self::Bash),
+            //"elvish" => Ok(Self::Elvish),
+            //"fish" => Ok(Self::Fish),
+            //"zsh" => Ok(Self::Zsh),
+            //_ => Err(format!("unknown shell type: {}", input)),
+        //}
+    //}
+
     fn to_possible_value(&self) -> Option<PossibleValue> {
         Some(PossibleValue::new(self.to_string()))
     }
 }
 
+//impl Display for Shell {
+    //fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        //match self {
+            //Self::Bash => write!(f, "bash"),
+            //Self::Elvish => write!(f, "elvish"),
+            //Self::Fish => write!(f, "fish"),
+            //Self::Zsh => write!(f, "zsh"),
+        //}
+    //}
+//}
 #[cfg(test)]
 mod tests {
     #[test]
     fn test_completion() {
         assert_cli!("completion", "zsh");
         assert_cli!("completion", "bash");
+        assert_cli!("completion", "elvish");
         assert_cli!("completion", "fish");
     }
 }
