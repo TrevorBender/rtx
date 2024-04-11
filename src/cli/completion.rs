@@ -30,7 +30,7 @@ pub struct Completion {
 impl Completion {
     pub fn run(mut self) -> Result<()> {
         let shell = self.shell.or(self.shell_type).unwrap();
-        if let Shell::Bash | Shell::Fish = shell {
+        if let Shell::Bash | Shell::Fish | Shell::Elvish = shell {
             self.usage = true;
         }
 
@@ -98,31 +98,12 @@ impl ValueEnum for Shell {
     fn value_variants<'a>() -> &'a [Self] {
         &[Self::Bash, Self::Elvish, Self::Fish, Self::Zsh]
     }
-    //fn from_str(input: &str, _ignore_case: bool) -> std::result::Result<Self, String> {
-        //match input {
-            //"bash" => Ok(Self::Bash),
-            //"elvish" => Ok(Self::Elvish),
-            //"fish" => Ok(Self::Fish),
-            //"zsh" => Ok(Self::Zsh),
-            //_ => Err(format!("unknown shell type: {}", input)),
-        //}
-    //}
 
     fn to_possible_value(&self) -> Option<PossibleValue> {
         Some(PossibleValue::new(self.to_string()))
     }
 }
 
-//impl Display for Shell {
-    //fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        //match self {
-            //Self::Bash => write!(f, "bash"),
-            //Self::Elvish => write!(f, "elvish"),
-            //Self::Fish => write!(f, "fish"),
-            //Self::Zsh => write!(f, "zsh"),
-        //}
-    //}
-//}
 #[cfg(test)]
 mod tests {
     #[test]
