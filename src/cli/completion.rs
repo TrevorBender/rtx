@@ -60,6 +60,7 @@ impl Completion {
     fn prerendered(&self, shell: Shell) -> String {
         match shell {
             Shell::Bash => include_str!("../../completions/mise.bash"),
+            Shell::Elvish => include_str!("../../completions/mise.elv"),
             Shell::Fish => include_str!("../../completions/mise.fish"),
             Shell::Zsh => include_str!("../../completions/_mise"),
         }
@@ -73,6 +74,7 @@ static AFTER_LONG_HELP: &str = color_print::cstr!(
     $ <bold>mise completion bash > /etc/bash_completion.d/mise</bold>
     $ <bold>mise completion zsh  > /usr/local/share/zsh/site-functions/_mise</bold>
     $ <bold>mise completion fish > ~/.config/fish/completions/mise.fish</bold>
+    $ <bold>eval (mise completion elvish | slurp)</bold>
 "#
 );
 
@@ -80,13 +82,14 @@ static AFTER_LONG_HELP: &str = color_print::cstr!(
 #[strum(serialize_all = "snake_case")]
 enum Shell {
     Bash,
+    Elvish,
     Fish,
     Zsh,
 }
 
 impl ValueEnum for Shell {
     fn value_variants<'a>() -> &'a [Self] {
-        &[Self::Bash, Self::Fish, Self::Zsh]
+        &[Self::Bash, Self::Elvish, Self::Fish, Self::Zsh]
     }
     fn to_possible_value(&self) -> Option<PossibleValue> {
         Some(PossibleValue::new(self.to_string()))
